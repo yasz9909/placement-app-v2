@@ -1,6 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const { sendEmail } = require('../utils/sendEmail');
+const CronService = require('../services/cronService');
+
+router.post('/trigger-reminders', async (req, res) => {
+  try {
+    await CronService.runNow();
+    res.json({ success: true, message: 'Reminder check triggered' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 router.post('/send-test-email', async (req, res) => {
   try {
