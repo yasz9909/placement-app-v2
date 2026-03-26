@@ -1,0 +1,5 @@
+Cron job scheduled: Placement reminders will be sent hourly
+Server running on port 5000
+Environment: development
+MongoDB connected successfully
+Running placement reminder cron job...

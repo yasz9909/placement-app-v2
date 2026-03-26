@@ -1,21 +1,17 @@
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
-  job_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job',
-    required: true
-  },
-  student_id: {
+  user_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  email: {
+  type: {
     type: String,
+    enum: ['new_job', 'placement_reminder', 'status_change', 'general'],
     required: true
   },
-  subject: {
+  title: {
     type: String,
     required: true
   },
@@ -23,15 +19,25 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  status: {
+  icon: {
     type: String,
-    enum: ['sent', 'failed'],
-    default: 'sent'
+    default: '🔔'
   },
-  sent_at: {
+  link: {
+    type: String,
+    default: '/'
+  },
+  read: {
+    type: Boolean,
+    default: false
+  },
+  createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+notificationSchema.index({ user_id: 1, createdAt: -1 });
+notificationSchema.index({ user_id: 1, read: 1 });
 
 module.exports = mongoose.model('Notification', notificationSchema);

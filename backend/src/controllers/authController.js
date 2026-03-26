@@ -66,32 +66,54 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password required' });
     }
 
+    // Check for mock admin first
+    if (email === 'admin@placement.com' && password === 'admin123') {
+      const token = jwt.sign(
+        { id: 'admin-mock-id', email, role: 'admin' },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+      
+      return res.json({
+        message: 'Login successful',
+        token,
+        user: {
+          id: 'admin-mock-id',
+          name: 'Admin User',
+          email,
+          role: 'admin'
+        }
+      });
+    }
+
+    // Check for mock student
+    if (email === 'student@test.com' && password === 'student123') {
+      const token = jwt.sign(
+        { id: 'student-mock-id', email, role: 'student' },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+      
+      return res.json({
+        message: 'Login successful',
+        token,
+        user: {
+          id: 'student-mock-id',
+          name: 'Test Student',
+          email,
+          role: 'student',
+          department: 'CSE',
+          cgpa: 8.5,
+          year: 4
+        }
+      });
+    }
+
     let user;
     try {
       user = await User.findOne({ email });
     } catch (dbError) {
       console.error('Database error during login:', dbError.message);
-      
-      // Mock admin for testing without DB
-      if (email === 'admin@placement.com' && password === 'admin123') {
-        const token = jwt.sign(
-          { id: 'admin-mock-id', email, role: 'admin' },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' }
-        );
-        
-        return res.json({
-          message: 'Login successful (mock mode)',
-          token,
-          user: {
-            id: 'admin-mock-id',
-            name: 'Admin User',
-            email,
-            role: 'admin'
-          }
-        });
-      }
-      
       return res.status(503).json({ message: 'Database connection error. Please try again later.' });
     }
     

@@ -4,6 +4,8 @@ import { getAllJobs, checkEligibility, applyForJob, getMyApplications, createPla
 import JobCard from '../components/student/JobCard';
 import ApplicationForm from '../components/student/ApplicationForm';
 import PlacementForm from '../components/student/PlacementForm';
+import NotificationBell from '../components/student/NotificationBell';
+import Sidebar from '../components/common/Sidebar';
 import './Dashboard.css';
 
 const StudentDashboard = () => {
@@ -15,7 +17,7 @@ const StudentDashboard = () => {
   const [eligibility, setEligibility] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showPlacementForm, setShowPlacementForm] = useState(false);
-  const [activeTab, setActiveTab] = useState('jobs');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -53,7 +55,14 @@ const StudentDashboard = () => {
 
   const handleApplyClick = async (job) => {
     try {
-      const response = await checkEligibility(job.id);
+      // Check if user has required profile fields
+      if (!user.department || !user.cgpa || !user.year) {
+        setMessage('Please complete your profile first. Contact admin.');
+        setTimeout(() => setMessage(''), 5000);
+        return;
+      }
+
+      const response = await checkEligibility(job.id || job._id);
       setEligibility(response.data);
       setSelectedJob(job);
       
@@ -64,7 +73,9 @@ const StudentDashboard = () => {
         setTimeout(() => setMessage(''), 5000);
       }
     } catch (error) {
-      setMessage('Error checking eligibility');
+      console.error('Eligibility check error:', error);
+      setMessage(error.response?.data?.message || 'Error checking eligibility. Please try again.');
+      setTimeout(() => setMessage(''), 5000);
     }
   };
 
@@ -106,127 +117,162 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="dashboard">
-      <nav className="navbar">
-        <h1>Placement Portal</h1>
-        <div>
-          <span>Welcome, {user.name}</span>
-          <button onClick={logout}>Logout</button>
-        </div>
-      </nav>
+    <div className="dashboard-layout">
+      <Sidebar role="student" activeTab={activeTab} onTabChange={setActiveTab} />
       
-      <div className="content">
-        <div className="tabs">
-          <button className={activeTab === 'jobs' ? 'active' : ''} onClick={() => setActiveTab('jobs')}>
-            Available Jobs
-          </button>
-          <button className={activeTab === 'placements' ? 'active' : ''} onClick={() => setActiveTab('placements')}>
-            My Placements
-          </button>
-          <button className={activeTab === 'applications' ? 'active' : ''} onClick={() => setActiveTab('applications')}>
-            My Applications
-          </button>
-        </div>
-
-        {message && <div className="message">{message}</div>}
-
-        {activeTab === 'jobs' && (
-          <div className="jobs-grid">
-            {jobs.map(job => (
-              <JobCard key={job.id || job._id} job={job} onApply={handleApplyClick} 
-                applied={applications.some(a => a.job_id === (job.id || job._id))} />
-            ))}
+      <div className="dashboard-main">
+        <nav className="navbar">
+          <h1>Placement Portal</h1>
+          <div>
+            <NotificationBell userId={user.id} />
+            <span>Welcome, {user.name}</span>
+            <button onClick={logout}>Logout</button>
           </div>
-        )}
+        </nav>
+        
+        <div className="content">
+          {message && <div className="message">{message}</div>}
 
-        {activeTab === 'placements' && (
-          <>
-            <div className="header">
-              <h2>My Placement Schedule</h2>
-              <button onClick={() => setShowPlacementForm(true)}>Add Placement</button>
+          {activeTab === 'dashboard' && (
+            <div className="dashboard-overview">
+              <h2>Dashboard Overview</h2>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-icon">💼</div>
+                  <div className="stat-info">
+                    <h3>{jobs.length}</h3>
+                    <p>Available Jobs</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">📝</div>
+                  <div className="stat-info">
+                    <h3>{applications.length}</h3>
+                    <p>Applications</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">📅</div>
+                  <div className="stat-info">
+                    <h3>{placements.length}</h3>
+                    <p>Placements</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="placements-list">
-              {placements.length === 0 ? (
-                <p>No placements added yet. Add your placement details to receive email reminders!</p>
+          )}
+
+          {activeTab === 'jobs' && (
+            <div className="jobs-grid">
+              {jobs.map(job => (
+                <JobCard key={job.id || job._id} job={job} onApply={handleApplyClick} 
+                  applied={applications.some(a => a.job_id === (job.id || job._id))} />
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'placements' && (
+            <>
+              <div className="header">
+                <h2>My Placement Schedule</h2>
+                <button onClick={() => setShowPlacementForm(true)}>Add Placement</button>
+              </div>
+              <div className="placements-list">
+                {placements.length === 0 ? (
+                  <p>No placements added yet. Add your placement details to receive email reminders!</p>
+                ) : (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Company</th>
+                        <th>Date & Time</th>
+                        <th>Timing</th>
+                        <th>Venue</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {placements.map(placement => (
+                        <tr key={placement._id}>
+                          <td>{placement.company_name}</td>
+                          <td>{new Date(placement.placement_date).toLocaleString()}</td>
+                          <td>{placement.timing}</td>
+                          <td>{placement.venue_details}</td>
+                          <td>{placement.additional_notes || '-'}</td>
+                          <td>
+                            <button onClick={() => handleDeletePlacement(placement._id)} className="btn-delete">Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </>
+          )}
+
+          {activeTab === 'applications' && (
+            <div className="applications-list">
+              {applications.length === 0 ? (
+                <p>No applications yet</p>
               ) : (
                 <table>
                   <thead>
                     <tr>
                       <th>Company</th>
-                      <th>Date & Time</th>
-                      <th>Timing</th>
-                      <th>Venue</th>
-                      <th>Notes</th>
-                      <th>Actions</th>
+                      <th>Role</th>
+                      <th>Applied On</th>
+                      <th>Status</th>
+                      <th>Placement Date</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {placements.map(placement => (
-                      <tr key={placement._id}>
-                        <td>{placement.company_name}</td>
-                        <td>{new Date(placement.placement_date).toLocaleString()}</td>
-                        <td>{placement.timing}</td>
-                        <td>{placement.venue_details}</td>
-                        <td>{placement.additional_notes || '-'}</td>
-                        <td>
-                          <button onClick={() => handleDeletePlacement(placement._id)} className="btn-delete">Delete</button>
-                        </td>
+                    {applications.map(app => (
+                      <tr key={app.id}>
+                        <td>{app.company_name}</td>
+                        <td>{app.job_role}</td>
+                        <td>{new Date(app.applied_at).toLocaleDateString()}</td>
+                        <td><span className={`status ${app.status}`}>{app.status}</span></td>
+                        <td>{new Date(app.placement_date).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               )}
             </div>
-          </>
+          )}
+
+          {activeTab === 'profile' && (
+            <div className="profile-section">
+              <h2>My Profile</h2>
+              <div className="profile-card">
+                <p><strong>Name:</strong> {user.name}</p>
+                <p><strong>Email:</strong> {user.email}</p>
+                <p><strong>Department:</strong> {user.department || 'N/A'}</p>
+                <p><strong>CGPA:</strong> {user.cgpa || 'N/A'}</p>
+                <p><strong>Year:</strong> {user.year || 'N/A'}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {showForm && (
+          <ApplicationForm 
+            job={selectedJob} 
+            user={user}
+            onSubmit={handleSubmitApplication}
+            onClose={() => setShowForm(false)}
+          />
         )}
 
-        {activeTab === 'applications' && (
-          <div className="applications-list">
-            {applications.length === 0 ? (
-              <p>No applications yet</p>
-            ) : (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Company</th>
-                    <th>Role</th>
-                    <th>Applied On</th>
-                    <th>Status</th>
-                    <th>Placement Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {applications.map(app => (
-                    <tr key={app.id}>
-                      <td>{app.company_name}</td>
-                      <td>{app.job_role}</td>
-                      <td>{new Date(app.applied_at).toLocaleDateString()}</td>
-                      <td><span className={`status ${app.status}`}>{app.status}</span></td>
-                      <td>{new Date(app.placement_date).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+        {showPlacementForm && (
+          <PlacementForm 
+            onSubmit={handleAddPlacement}
+            onClose={() => setShowPlacementForm(false)}
+          />
         )}
       </div>
-
-      {showForm && (
-        <ApplicationForm 
-          job={selectedJob} 
-          user={user}
-          onSubmit={handleSubmitApplication}
-          onClose={() => setShowForm(false)}
-        />
-      )}
-
-      {showPlacementForm && (
-        <PlacementForm 
-          onSubmit={handleAddPlacement}
-          onClose={() => setShowPlacementForm(false)}
-        />
-      )}
     </div>
   );
 };

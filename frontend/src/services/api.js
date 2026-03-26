@@ -44,4 +44,10 @@ export const getMyPlacements = () => api.get('/placements/my-placements');
 export const getAllPlacements = () => api.get('/placements/all');
 export const deletePlacement = (id) => api.delete(`/placements/${id}`);
 
+// Notification APIs
+export const getNotifications = () => api.get('/notifications');
+export const markNotificationAsRead = (id) => api.put(`/notifications/${id}/read`);
+export const markAllNotificationsAsRead = () => api.put('/notifications/mark-all-read');
+export const createNotification = (data) => api.post('/notifications', data);
+
 export default api;

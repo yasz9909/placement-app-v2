@@ -1,4 +1,5 @@
 require('dotenv').config();
+console.log("ENV CHECK:", process.env.MONGO_URI);
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -21,6 +22,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));
 app.use('/api/applications', require('./routes/applicationRoutes'));
 app.use('/api/placements', require('./routes/placementRoutes'));
+// app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/test', require('./routes/testRoutes'));
 
 // Health check
