@@ -10,6 +10,10 @@ const placementSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  job_role: {
+    type: String,
+    default: 'Not specified'
+  },
   placement_date: {
     type: Date,
     required: true

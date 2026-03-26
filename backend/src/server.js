@@ -13,7 +13,12 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: [process.env.FRONTEND_URL, 'https://placement-app-v2-yasz9909s-projects.vercel.app'],
+  origin: [
+    'http://localhost:3000',
+    'https://placement-app-v2.vercel.app',
+    'https://placement-app-v2-yasz9909s-projects.vercel.app',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   credentials: true
 }));
 app.use(express.json());

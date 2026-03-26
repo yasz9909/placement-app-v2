@@ -3,7 +3,7 @@ const User = require('../models/User');
 
 exports.createPlacement = async (req, res) => {
   try {
-    const { company_name, placement_date, timing, venue_details, additional_notes } = req.body;
+    const { company_name, job_role, placement_date, timing, venue_details, additional_notes } = req.body;
 
     if (!company_name || !placement_date || !timing || !venue_details) {
       return res.status(400).json({ message: 'All required fields must be provided' });
@@ -14,6 +14,7 @@ exports.createPlacement = async (req, res) => {
       placement = await Placement.create({
         student_id: req.user.id,
         company_name,
+        job_role,
         placement_date,
         timing,
         venue_details,

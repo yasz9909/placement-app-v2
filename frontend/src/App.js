@@ -5,6 +5,8 @@ import { AuthProvider, AuthContext } from './utils/AuthContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import StudentDashboard from './pages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import './App.css';
@@ -35,6 +37,8 @@ function AppRoutes() {
         <Route path="/admin/login" element={!user ? <Login userType="admin" /> : <Navigate to="/admin/dashboard" />} />
         <Route path="/student/login" element={!user ? <Login userType="student" /> : <Navigate to="/student/dashboard" />} />
         <Route path="/register" element={!user ? <Register /> : <Navigate to="/student/dashboard" />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/student/dashboard" element={<PrivateRoute role="student"><StudentDashboard /></PrivateRoute>} />
         <Route path="/admin/dashboard" element={<PrivateRoute role="admin"><AdminDashboard /></PrivateRoute>} />
       </Routes>

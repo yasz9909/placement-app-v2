@@ -21,6 +21,8 @@ export const login = (data) => api.post('/auth/login', data);
 export const getProfile = () => api.get('/auth/profile');
 export const updateProfile = (data) => api.put('/auth/profile', data);
 export const getAllStudents = () => api.get('/auth/students');
+export const forgotPassword = (email) => api.post('/auth/forgot-password', { email });
+export const resetPassword = (token, password) => api.post(`/auth/reset-password/${token}`, { password });
 
 // Job APIs
 export const getAllJobs = () => api.get('/jobs');

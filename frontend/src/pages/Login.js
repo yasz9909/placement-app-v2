@@ -178,6 +178,11 @@ const Login = ({ userType = 'student' }) => {
           <button type="submit" disabled={loading} className="login-btn">
             {loading ? '🔄 Logging in...' : '🚀 Login'}
           </button>
+          {userType === 'student' && (
+            <p style={{ textAlign: 'right', margin: '8px 0 0' }}>
+              <Link to="/forgot-password" style={{ color: '#667eea', fontSize: '14px' }}>Forgot Password?</Link>
+            </p>
+          )}
         </form>
         
         {userType === 'student' && (

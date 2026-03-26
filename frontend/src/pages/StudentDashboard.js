@@ -5,6 +5,7 @@ import JobCard from '../components/student/JobCard';
 import ApplicationForm from '../components/student/ApplicationForm';
 import PlacementForm from '../components/student/PlacementForm';
 import NotificationBell from '../components/student/NotificationBell';
+import CompleteProfile from '../components/student/CompleteProfile';
 import Sidebar from '../components/common/Sidebar';
 import './Dashboard.css';
 
@@ -19,6 +20,8 @@ const StudentDashboard = () => {
   const [showPlacementForm, setShowPlacementForm] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [message, setMessage] = useState('');
+  const needsProfile = !user.department || user.department === 'Not specified' || !user.cgpa || user.cgpa === 0 || !user.year;
+  const [showCompleteProfile, setShowCompleteProfile] = useState(needsProfile);
 
   useEffect(() => {
     fetchJobs();
@@ -264,6 +267,10 @@ const StudentDashboard = () => {
             onSubmit={handleSubmitApplication}
             onClose={() => setShowForm(false)}
           />
+        )}
+
+        {showCompleteProfile && (
+          <CompleteProfile onComplete={() => setShowCompleteProfile(false)} />
         )}
 
         {showPlacementForm && (

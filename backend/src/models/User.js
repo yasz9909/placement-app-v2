@@ -33,6 +33,8 @@ const userSchema = new mongoose.Schema({
   timing: String,
   venue_details: String,
   resume_url: String,
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   createdAt: {
     type: Date,
     default: Date.now

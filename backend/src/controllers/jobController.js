@@ -240,24 +240,18 @@ exports.createJob = async (req, res) => {
       console.log('Fetching student emails...');
       let students;
       try {
-        students = await User.find({ role: 'student' }).select('email');
+        students = await User.find({ role: 'student' }).select('email name');
       } catch (dbError) {
         console.log('Database error, using mock student emails');
-        // Mock student emails
-        students = [
-          { email: 'yaswanth2420@gmail.com' },
-          { email: 'student@test.com' }
-        ];
+        students = [{ email: 'yaswanth2420@gmail.com', name: 'Student' }];
       }
       
-      const studentEmails = students.map(s => s.email).filter(email => email);
+      const validStudents = students.filter(s => s.email);
       
-      if (studentEmails.length > 0) {
-        console.log(`Sending notifications to ${studentEmails.length} students:`, studentEmails);
-        const emailResult = await sendNewJobNotification(job, studentEmails);
-        console.log(`Email notification result:`, emailResult);
-      } else {
-        console.log('No students found to notify');
+      if (validStudents.length > 0) {
+        console.log(`Sending notifications to ${validStudents.length} students`);
+        const emailResult = await sendNewJobNotification(job, validStudents);
+        console.log('Email notification result:', emailResult);
       }
     } catch (emailError) {
       console.error('Error sending email notifications:', emailError.message);
