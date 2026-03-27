@@ -10,7 +10,7 @@ class CronService {
     console.log('Running placement reminder check...');
     try {
       const now = new Date();
-      const next24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000 + 15 * 60 * 1000);
+      const next24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000); // 30hr window to handle timezone gaps
 
       // Check job placements
       const upcomingJobs = await Job.find({
