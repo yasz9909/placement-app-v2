@@ -33,7 +33,7 @@ const Register = () => {
     try {
       setLoading(true);
       setError('');
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://placement-app-v2.onrender.com/api';
       const response = await fetch(`${apiUrl}/auth/google-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
