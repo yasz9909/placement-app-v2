@@ -12,6 +12,35 @@ router.post('/trigger-reminders', async (req, res) => {
   }
 });
 
+router.get('/check-placements', async (req, res) => {
+  try {
+    const Placement = require('../models/Placement');
+    const now = new Date();
+    const next24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000 + 15 * 60 * 1000);
+    const all = await Placement.find({});
+    const upcoming = await Placement.find({
+      placement_date: { $gte: now, $lte: next24Hours },
+      reminder_sent: false
+    });
+    res.json({
+      now,
+      next24Hours,
+      totalPlacements: all.length,
+      allPlacements: all.map(p => ({
+        id: p._id,
+        company: p.company_name,
+        date: p.placement_date,
+        reminder_sent: p.reminder_sent,
+        student_email: p.student_email,
+        student_name: p.student_name
+      })),
+      upcomingCount: upcoming.length
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/send-test-email', async (req, res) => {
   try {
     const { to } = req.body;
