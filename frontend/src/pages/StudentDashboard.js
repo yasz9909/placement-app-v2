@@ -15,7 +15,6 @@ const StudentDashboard = () => {
   const [applications, setApplications] = useState([]);
   const [placements, setPlacements] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
-  const [eligibility, setEligibility] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showPlacementForm, setShowPlacementForm] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -66,7 +65,6 @@ const StudentDashboard = () => {
       }
 
       const response = await checkEligibility(job.id || job._id);
-      setEligibility(response.data);
       setSelectedJob(job);
       
       if (response.data.eligible) {

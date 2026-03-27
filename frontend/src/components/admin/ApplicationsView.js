@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getMyApplications, updateApplicationStatus } from '../../services/api';
+import { getJobApplications, updateApplicationStatus } from '../../services/api';
 import './ApplicationsView.css';
 
 const ApplicationsView = () => {
