@@ -211,59 +211,26 @@ const mockJobs = [
 
 exports.createJob = async (req, res) => {
   try {
-    console.log('Creating new job with data:', req.body);
-    
-    const jobData = {
-      ...req.body,
-      created_by: req.user.id,
-      id: 'job-' + Date.now() // Add ID for mock jobs
-    };
+    const jobData = { ...req.body };
 
-    let job;
-    try {
-      job = await Job.create(jobData);
-      console.log('Job created in database:', job._id);
-    } catch (dbError) {
-      console.error('Database error, using mock job creation:', dbError.message);
-      // Mock job creation - add to mockJobs array
-      job = {
-        _id: jobData.id,
-        ...jobData,
-        createdAt: new Date()
-      };
-      mockJobs.unshift(job); // Add to beginning of array
-      console.log('Mock job created:', job._id);
+    // Handle mock admin id (not a valid ObjectId)
+    const mongoose = require('mongoose');
+    if (mongoose.Types.ObjectId.isValid(req.user.id)) {
+      jobData.created_by = req.user.id;
+    } else {
+      // Use a placeholder ObjectId for mock admin
+      jobData.created_by = new mongoose.Types.ObjectId('000000000000000000000001');
     }
-    
-    // Send email notifications to all students
-    try {
-      console.log('Fetching student emails...');
-      let students;
-      try {
-        students = await User.find({ role: 'student' }).select('email name');
-      } catch (dbError) {
-        console.log('Database error, using mock student emails');
-        students = [{ email: 'yaswanth2420@gmail.com', name: 'Student' }];
-      }
-      
-      const validStudents = students.filter(s => s.email);
-      
-      if (validStudents.length > 0) {
-        console.log(`Sending notifications to ${validStudents.length} students`);
-        const emailResult = await sendNewJobNotification(job, validStudents);
-        console.log('Email notification result:', emailResult);
-      }
-    } catch (emailError) {
-      console.error('Error sending email notifications:', emailError.message);
-      console.error('Email error stack:', emailError.stack);
-      // Don't fail the job creation if email fails
-    }
-    
-    res.status(201).json({ 
-      message: 'Job created successfully and notifications sent', 
-      jobId: job._id || job.id,
-      job: job
-    });
+
+    const job = await Job.create(jobData);
+
+    // Send emails in background — don't await so response is instant
+    User.find({ role: 'student' }).select('email name').then(students => {
+      const valid = students.filter(s => s.email);
+      if (valid.length > 0) sendNewJobNotification(job, valid).catch(console.error);
+    }).catch(console.error);
+
+    res.status(201).json({ message: 'Job created successfully', job });
   } catch (error) {
     console.error('Create job error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });

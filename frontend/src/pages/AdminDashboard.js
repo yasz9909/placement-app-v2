@@ -15,6 +15,7 @@ const AdminDashboard = () => {
   const [editingJob, setEditingJob] = useState(null);
   const [selectedJobApps, setSelectedJobApps] = useState(null);
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState({ students: 0, jobs: 0, applications: 0, placements: 0 });
 
@@ -49,13 +50,14 @@ const AdminDashboard = () => {
   const handleCreateJob = async (jobData) => {
     try {
       await createJob(jobData);
-      setMessage('Job created successfully!');
+      setMessage('✅ Job created successfully!');
+      setError('');
       setShowForm(false);
       fetchJobs();
       fetchStats();
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage('Error creating job');
+      setError(error.response?.data?.message || error.response?.data?.error || 'Error creating job');
     }
   };
 
@@ -143,6 +145,7 @@ const AdminDashboard = () => {
           )}
 
           {message && <div className="message">{message}</div>}
+          {error && <div className="message" style={{background:'#ffebee',color:'#c62828',borderLeft:'5px solid #e53935'}}>{error}</div>}
 
           {activeTab === 'jobs' && (
             <>
