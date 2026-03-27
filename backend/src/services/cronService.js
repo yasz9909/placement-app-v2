@@ -30,14 +30,28 @@ class CronService {
       const upcomingPlacements = await Placement.find({
         placement_date: { $gte: now, $lte: next24Hours },
         reminder_sent: false
-      }).populate('student_id');
+      }).populate('student_id', 'name email');
 
       for (const placement of upcomingPlacements) {
-        if (placement.student_id) {
-          console.log(`Sending reminder: ${placement.company_name} → ${placement.student_id.email}`);
-          await EmailService.sendStudentPlacementReminder(placement, placement.student_id);
+        let student = placement.student_id;
+
+        // If populate failed, fetch student manually
+        if (!student && placement.student_id) {
+          student = await User.findById(placement.student_id).select('name email');
+        }
+
+        // Final fallback: use stored email on placement
+        if (!student && placement.student_email) {
+          student = { name: placement.student_name || 'Student', email: placement.student_email };
+        }
+
+        if (student && student.email) {
+          console.log(`Sending reminder: ${placement.company_name} → ${student.email}`);
+          await EmailService.sendStudentPlacementReminder(placement, student);
           placement.reminder_sent = true;
           await placement.save();
+        } else {
+          console.log(`Skipping placement ${placement._id} - no student email found`);
         }
       }
 

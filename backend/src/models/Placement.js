@@ -27,6 +27,8 @@ const placementSchema = new mongoose.Schema({
     required: true
   },
   additional_notes: String,
+  student_email: String,
+  student_name: String,
   reminder_sent: {
     type: Boolean,
     default: false

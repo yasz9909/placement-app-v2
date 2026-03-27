@@ -9,10 +9,20 @@ exports.createPlacement = async (req, res) => {
       return res.status(400).json({ message: 'All required fields must be provided' });
     }
 
+    const mongoose = require('mongoose');
+    const studentId = mongoose.Types.ObjectId.isValid(req.user.id)
+      ? req.user.id
+      : new mongoose.Types.ObjectId('000000000000000000000002');
+
+    // Fetch student details for email
+    const student = await User.findById(studentId).select('name email').catch(() => null);
+
     let placement;
     try {
       placement = await Placement.create({
-        student_id: req.user.id,
+        student_id: studentId,
+        student_email: student?.email || req.user.email,
+        student_name: student?.name || req.user.name,
         company_name,
         job_role,
         placement_date,
@@ -21,18 +31,8 @@ exports.createPlacement = async (req, res) => {
         additional_notes
       });
     } catch (dbError) {
-      console.error('Database error, using mock placement:', dbError.message);
-      placement = {
-        _id: 'mock-' + Date.now(),
-        student_id: req.user.id,
-        company_name,
-        placement_date,
-        timing,
-        venue_details,
-        additional_notes,
-        reminder_sent: false,
-        createdAt: new Date()
-      };
+      console.error('Database error creating placement:', dbError.message);
+      return res.status(500).json({ message: 'Failed to save placement', error: dbError.message });
     }
 
     res.status(201).json({ 
